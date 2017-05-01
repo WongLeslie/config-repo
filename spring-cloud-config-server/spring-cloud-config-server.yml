@@ -6,6 +6,7 @@ spring.database.driverClassName: "com.mysql.jdbc.Driver"
 spring.datasource.url: "jdbc:mysql://www.www.com:3306/eagle_eye_local"
 spring.datasource.username: "root"
 spring.datasource.password: "{cipher}AQB1uK3IkOb4Epg1r7ZvuWXD9wKn9vyyuzhY5wiFy/1R2ulCabxnU6TCnqaj5MDLY4t+tFPLUy/piozHPAwc1wrUpwbAGwufGSICYIcedq3l1r2SaKyqMBtWvRuRDmZ0u7E3X8ogWRNfUWeOVpl2+pjfSENBM/ll4+XVcLtoRQs3Y/cugqINnWAP9jimtngzQZOPQdGCW+O75743UXiDJGDYYm1odalxA+G5rc8QaGbN3byPZTOtvzEtEtAuP21mR40tPPUR6Yx3SXs7i26BQNbx6yXc7RBsYOewDC+R+RRUdmb+8U/kqLavkDGzBOLCQzAa2CDhRpzX1Qd6XcekPZVnw7iPdjzFRIgi1u+Z063EnTZHyevjE/oF/tInVuKUm1E="
+
 spring.datasource.testWhileIdle: "true"
 spring.datasource.validationQuery: "SELECT 1"
 spring.jpa.properties.hibernate.dialect: "org.hibernate.dialect.MySQL5Dialect"
