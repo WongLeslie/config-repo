@@ -1,0 +1,133 @@
+image::https://circleci.com/gh/spring-cloud/spring-cloud-config/tree/master.svg?style=svg["CircleCI", link="https://circleci.com/gh/spring-cloud/spring-cloud-config/tree/master"]
+image::https://codecov.io/gh/spring-cloud/spring-cloud-config/branch/master/graph/badge.svg["Codecov", link="https://codecov.io/gh/spring-cloud/spring-cloud-config/branch/master"]
+image::https://api.codacy.com/project/badge/Grade/f064024a072c477e97dca6ed5a70fccd?branch=master["Codacy code quality", link="https://www.codacy.com/app/Spring-Cloud/spring-cloud-config?branch=master&utm_source=github.com&utm_medium=referral&utm_content=spring-cloud/spring-cloud-config&utm_campaign=Badge_Grade"]
+
+
+== Features
+
+
+=== Spring Cloud Config Server
+
+
+==== 提示： www.www.com 是我给127.0.0.1配置的host
+
+* 我为了配置  https://github.com/WongLeslie/config-repo/blob/master/spring-cloud-config-server/spring-cloud-config-server.yml[spring-cloud-config-server]服务的mysql加密密码(下面的spring.datasource.password),所写的readme,贴出我的服务配置
+
+[source,yml]
+
+----
+
+example.property: "I AM IN THE DEFAULT"
+spring.jpa.database: "MYSQL"
+spring.datasource.platform:  "mysql"
+spring.jpa.show-sql: "true"
+spring.database.driverClassName: "com.mysql.jdbc.Driver"
+spring.datasource.url: "jdbc:mysql://www.www.com:3306/eagle_eye_local"
+spring.datasource.username: "root"
+spring.datasource.password: "{cipher}4788dfe1ccbe6485934aec2ffeddb06163ea3d616df5fd75be96aadd4df1da91"
+spring.datasource.testWhileIdle: "true"
+spring.datasource.validationQuery: "SELECT 1"
+spring.jpa.properties.hibernate.dialect: "org.hibernate.dialect.MySQL5Dialect"
+redis.server: "www.www.com"
+redis.port: "6379"
+signing.key: ""
+
+
+----
+
+* 贴出我config server(通过我现在配置的config server去读取github上的配置,之后会再编写一个config client专门读取config server 的内容，以后服务都是访问config client 来读取各自的配置，真特么的麻烦！！！！)
+
+[source,yaml]
+----
+
+server:
+  port: 8888
+spring:
+  cloud:
+    config:
+      server:
+        encrypt.enabled: false
+        git:
+          uri: git@github.com:WongLeslie/config-repo.git
+          searchPaths: spring-cloud-config-server,organizationservice
+encrypt:
+  keyStore:
+    location: classpath:/server.jks (这个文件放在resources)
+    password: letmein
+    alias: mytestkey
+    secret: changeme
+security:
+  user:
+    name: root
+    password: sasa
+
+----
+
+* 当你通过没有配置我上面yaml文件中提及到的keyStore时，你的curl请求后返回的内容大概是这样
+
+[source,bash]
+----
+
+  ➜  ~ arvin curl www.www.com:8888/encrypt -d password(mysql密码！) -i --user root:sasa
+
+HTTP/1.1 404
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+X-Application-Context: spring-cloud-server-git:8888
+Content-Type: application/json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Mon, 01 May 2017 15:56:07 GMT
+
+{"description":"No key was installed for encryption service","status":"NO_KEY"}%
+
+----
+
+* 所以你需要按照这个文档去生成一个keyStore的配置： http://cloud.spring.io/spring-cloud-config/spring-cloud-config.html#_key_management[配置keyStore]
+** 然后按照这个文档去生成加密的mysql密码： http://projects.spring.io/spring-cloud/spring-cloud.html#_encryption_and_decryption_2[生成加密密码]
+*** 为什么我上面的curl请求和文档当中的不一样？
+
+[source,bash]
+----
+   curl www.www.com:8888/encrypt -d password(mysql密码！) -i --user root:sasa
+----
+***** 因为security页面需要进行验证,你需要通过--user填写security的账号和密码,否则会提示
+
+[source,html]
+----
+
+{"timestamp":1493652033901,"status":401,"error":"Unauthorized","message":"Bad credentials","path":"/encrypt"}
+----
+
+**** 如果你加密成功了,返回结果就是这样了
+
+[source,html]
+----
+
+➜  ~ arvin curl www.www.com:8888/encrypt -d sasa -i --user root:sasa
+HTTP/1.1 200
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+X-Application-Context: spring-cloud-server-git:8888
+Content-Type: text/plain;charset=UTF-8
+Content-Length: 388
+Date: Mon, 01 May 2017 17:02:51 GMT
+
+AQB1uK3IkOb4Epg1r7ZvuWXD9wKn9vyyuzhY5wiFy/1R2ulCabxnU6TCnqaj5MDLY4t+tFPLUy/piozHPAwc1wrUpwbAGwufGSICYIcedq3l1r2SaKyqMBtWvRuRDmZ0u7E3X8ogWRNfUWeOVpl2+pjfSENBM/ll4+XVcLtoRQs3Y/cugqINnWAP9jimtngzQZOPQdGCW+O75743UXiDJGDYYm1odalxA+G5rc8QaGbN3byPZTOtvzEtEtAuP21mR40tPPUR6Yx3SXs7i26BQNbx6yXc7RBsYOewDC+R+RRUdmb+8U/kqLavkDGzBOLCQzAa2CDhRpzX1Qd6XcekPZVnw7iPdjzFRIgi1u+Z063EnTZHyevjE/oF/tInVuKUm1E=
+----
+
+
+
+
+=== 比起dubbo 使用druid执行下命令就能加密mysql密码,这个真的太恶心了！
+
+
